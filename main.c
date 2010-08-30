@@ -64,9 +64,11 @@ int builtin_cmd(char **argv);
 void do_bgfg(char **argv);
 void waitfg(pid_t pid);
 
+/*
 void sigchld_handler(int sig);
 void sigtstp_handler(int sig);
 void sigint_handler(int sig);
+*/
 
 /* Here are helper routines that we've provided for you */
 int parseline(const char *cmdline, char **argv, int *argc_out); 
@@ -354,7 +356,7 @@ void waitfg(pid_t pid)
  *     available zombie children, but doesn't wait for any other
  *     currently running children to terminate.  
  */
-void sigchld_handler(int sig) 
+/*void sigchld_handler(int sig) 
 {
 	int stat, chld_sig;
 	pid_t pid;
@@ -370,60 +372,64 @@ void sigchld_handler(int sig)
 	}
 	
 	return;
-}
+}*/
 
 /* 
  * sigint_handler - The kernel sends a SIGINT to the shell whenver the
  *    user types ctrl-c at the keyboard.  Catch it and send it along
  *    to the foreground job.  
  */
+/*
 void sigint_handler(int sig) 
 {
-	pid_t pid = fgpid(jobs);
-	int jid = pid2jid(pid);
-	
-	if (sig != SIGINT)
-		return;
-	else {
-		if (pid == 0)
-			return;
-		else {
-			printf("Jid:%d\n"
-				   "Pid:%d\n"
-				   "stopped by SIGINT", jid, pid);
-			deletejob(jobs, pid);
-			kill(pid, sig);		}
-	}
-	
-	return;
+  pid_t pid = fgpid(jobs);
+  int jid = pid2jid(pid);
+  
+  if (sig != SIGINT)
+    return;
+  else {
+    if (pid == 0)
+      return;
+    else {
+      printf("Jid:%d\n"
+           "Pid:%d\n"
+           "stopped by SIGINT", jid, pid);
+      deletejob(jobs, pid);
+      kill(pid, sig);    }
+  }
+  
+  return;
 }
+*/
 
 /*
  * sigtstp_handler - The kernel sends a SIGTSTP to the shell whenever
  *     the user types ctrl-z at the keyboard. Catch it and suspend the
  *     foreground job by sending it a SIGTSTP.  
  */
+/*
 void sigtstp_handler(int sig) 
 {
-	pid_t pid;
-	int jid;
-	struct job_t *job;
-	
-	pid = fgpid(jobs);
-	if (pid == 0)
-		return;
-	else {
-		jid = pid2jid(pid);
-		printf("Jid: %d\n"
-			   "Pid: %d\n"
-			   "stopped by SIGTSTP\n", jid, pid);
-		kill(pid, sig);
-		job = getjobjid(jobs, jid);
-		(*job).state = ST;
-	}
-	
-	return;
+  pid_t pid;
+  int jid;
+  struct job_t *job;
+  
+  pid = fgpid(jobs);
+  if (pid == 0)
+    return;
+  else {
+    jid = pid2jid(pid);
+    printf("Jid: %d\n"
+         "Pid: %d\n"
+         "stopped by SIGTSTP\n", jid, pid);
+    kill(pid, sig);
+    job = getjobjid(jobs, jid);
+    (*job).state = ST;
+  }
+  
+  return;
 }
+*/
 
 /*********************
  * End signal handlers
