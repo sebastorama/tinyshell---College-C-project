@@ -18,11 +18,9 @@
 #define _ANSI_SOURCE
 #define MAXLINE    1024   /* max line size */
 #define MAXARGS     128   /* max args on a command line */
-#define MAXPATHS     16   /* 
 
 /* Global variables */
 char prompt[] = "B14> ";    /* command line prompt */
-int verbose = 0;            /* if true, print additional output */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
 /* End global variables */
 
@@ -113,8 +111,7 @@ void eval(char *cmdline)
  * parseline - Parse the command line and build the argv array.
  * 
  * Characters enclosed in single quotes are treated as a single
- * argument.  Return true if the user has requested a BG job, false if
- * the user has requested a FG job.
+ * argument.
  *
  *
  * We modified this a little bit from the original source by adding a 
@@ -172,9 +169,9 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
 }
 
 /* Similar to the unix program 'which'. Get the program name in argv0, search
- for it's ocurrence on the directorys list of $PATH, and returns the first 
- ocurrence, with the program name appended to the directory str 
- fresh new allocated str. If nothing found, returns NULL. 
+ for it's ocurrence on the directorys list of $PATH, and returns the first valid 
+ ocurrence, with the program name appended to the directory on a
+ fresh new allocated str. If nothing was found, returns NULL. 
  Also, if argv0 is already an absolute path (with a '/' on the beginning), 
  return argv0 unchanged */
 
@@ -187,12 +184,11 @@ char * which(char * argv0) {
 		char *current_path = NULL; /* Holds the current path that's being tested */
 		char *which = NULL;
 		
-		int i;
-		for (i=0; i<MAXPATHS && path; i++) {
+		while (path) {
 			current_path = strsep(&path, ":");
 			which = calloc(strlen(argv0) + strlen(current_path) + 1, sizeof(char));
 			
-			/* Concatenate argv0 + '/' + current_path for file testing */
+			/* Concat argv0 + '/' + current_path for file testing */
 			strcat(which, current_path);
 			if (*(path-2) != '/') strcat(which, "/");
 			strcat(which, argv0);
