@@ -1,1 +1,5 @@
+=== Testing withou path ====
 /bin/cat /Users/sebastorama/Documents/notes.txt
+
+=== Testing with path ====
+cat /Users/sebastorama/Documents/notes.txt

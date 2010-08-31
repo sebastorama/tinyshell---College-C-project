@@ -1,89 +1,53 @@
 /* 
- * tsh - A tiny shell program with job control
+ * MiniShell - Parte 1
  * 
  * Sebastião Giacheto Ferreira Júnior - 5634611
- * Francisco Ito Anuatti			  - 4586996
- * Turma A - SO2
+ *  * Turma A - SO2
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <ctype.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <errno.h>
 
 /* Misc manifest constants */
 #define _ANSI_SOURCE
 #define MAXLINE    1024   /* max line size */
 #define MAXARGS     128   /* max args on a command line */
-
-
-/* 
- * Jobs states: FG (foreground), BG (background), ST (stopped)
- * Job state transitions and enabling actions:
- *     FG -> ST  : ctrl-z
- *     ST -> FG  : fg command
- *     ST -> BG  : bg command
- *     BG -> FG  : fg command
- * At most 1 job can be in the FG state.
- */
+#define MAXPATHS     16   /* 
 
 /* Global variables */
 extern char **environ;      /* defined in libc */
-char prompt[] = "B14> ";    /* command line prompt (DO NOT CHANGE) */
+char prompt[] = "B14> ";    /* command line prompt */
 int verbose = 0;            /* if true, print additional output */
-int nextjid = 1;            /* next job ID to allocate */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
 /* End global variables */
 
 
 /* Function prototypes */
 
-/* Here are the functions that you will implement */
+
 void eval(char *cmdline);
+int parseline(const char *cmdline, char **argv, int *argc_out);
+char * which(char * argv0);
+int file_exists(const char * filename);
 
-
-/* Here are helper routines that we've provided for you */
-int parseline(const char *cmdline, char **argv, int *argc_out); 
 
 void usage(void);
 void unix_error(char *msg);
 void app_error(char *msg);
-typedef void handler_t(int);
 
 /*
  * main - The shell's main routine 
  */
 int main(int argc, char **argv) 
 {
-    char c;
     char cmdline[MAXLINE];
     int emit_prompt = 1; /* emit prompt (default) */
 	
     /* Redirect stderr to stdout (so that driver will get all output
      * on the pipe connected to stdout) */
     dup2(1, 2);
-	
-    /* Parse the command line */
-    while ((c = getopt(argc, argv, "hvp")) != EOF) {
-        switch (c) {
-			case 'h':             /* print help message */
-				usage();
-				break;
-			case 'v':             /* emit additional diagnostic info */
-				verbose = 1;
-				break;
-			case 'p':             /* don't print a prompt */
-				emit_prompt = 0;  /* handy for automatic testing */
-				break;
-			default:
-				usage();
-		}
-    }
-	
 	
     /* Execute the shell's read/eval loop */
     while (1) {
@@ -116,10 +80,14 @@ int main(int argc, char **argv)
 void eval(char *cmdline) 
 {
 	char *argv[MAXARGS];
+	memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
+	
 	int argc, bg;
 	pid_t pid;
 	
 	bg = parseline(cmdline, argv, &argc);
+	char * argv0_with_path = which(argv[0]);
+
 	if (!argc) return; /* parseline got a blank line */
 	
 	
@@ -127,11 +95,12 @@ void eval(char *cmdline)
 	if (pid > 0)         /* father code */
 	{   
 		waitpid(pid, 0, 0);
+		memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
 	} 
 	else if (pid==0)   /* child code */
 	{
 		setpgid(0, 0);
-		execve(argv[0], argv, 0);
+		execve(argv0_with_path, argv, 0);
 		exit(1); /* if something goes wrong */
 	}
 	
@@ -195,27 +164,53 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
 		*argc_out = 0;
 		return 1;
 	}
-	
+		
 	*argc_out = argc;
     return 0;
 }
 
+
+/*  */
+char * which(char * argv0) {
+	if (argv0[0] == '/') return argv0;
+	char *env_path = getenv("PATH");
+	char *path = calloc(strlen(env_path), sizeof(char));
+	strcpy(path, env_path);
+	char *current_path = NULL; /* Holds the current path that's being tested */
+	char *which = NULL;
+	
+	int i;
+	for (i=0; i<MAXPATHS && path; i++) {
+		current_path = strsep(&path, ":");
+		which = calloc(strlen(argv0) + strlen(current_path) + 1, sizeof(char));
+		
+		strcat(which, current_path);
+		if (*(path-2) != '/') strcat(which, "/");
+		strcat(which, argv0);
+		if (file_exists(which)) return which;
+		free(which);
+		which = NULL;
+	}
+	
+	return NULL;
+}
+
+
+/* Check file existence on path "filename" */
+int file_exists(const char * filename) {
+	FILE * file;
+    if (file = fopen(filename, "r")) {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+
+
 /***********************
  * Other helper routines
  ***********************/
-
-/*
- * usage - print a help message
- */
-void usage(void) 
-{
-	printf("Usage: shell [-hvp]\n");
-	printf("   -h   print this message\n");
-	printf("   -v   print additional diagnostic information\n");
-	printf("   -p   do not emit a command prompt\n");
-	exit(1);
-}
-
 /*
  * unix_error - unix-style error routine
  */
@@ -233,5 +228,6 @@ void app_error(char *msg)
 	fprintf(stdout, "%s\n", msg);
 	exit(1);
 }
+
 
 
