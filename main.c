@@ -17,7 +17,6 @@
 #define MAXPATHS     16   /* 
 
 /* Global variables */
-extern char **environ;      /* defined in libc */
 char prompt[] = "B14> ";    /* command line prompt */
 int verbose = 0;            /* if true, print additional output */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
@@ -25,14 +24,12 @@ char sbuf[MAXLINE];         /* for composing sprintf messages */
 
 
 /* Function prototypes */
-
-
 void eval(char *cmdline);
 int parseline(const char *cmdline, char **argv, int *argc_out);
 char * which(char * argv0);
 int file_exists(const char * filename);
 
-
+/* Misc function prototypes */
 void usage(void);
 void unix_error(char *msg);
 void app_error(char *msg);
