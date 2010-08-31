@@ -170,7 +170,12 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
 }
 
 
-/*  */
+/* Similar to the unix program 'which'. Get the program name in argv0, search
+ for it's ocurrence on the directorys list of $PATH, and returns the first 
+ ocurrence, with the program name appended to the directory str 
+ fresh new allocated str. If nothing found, returns NULL. 
+ Also, if argv0 is already an absolute path (with a '/' on the beginning), 
+ return argv0 unchanged */
 char * which(char * argv0) {
 	if (argv0[0] == '/') return argv0;
 	char *env_path = getenv("PATH");
@@ -184,9 +189,11 @@ char * which(char * argv0) {
 		current_path = strsep(&path, ":");
 		which = calloc(strlen(argv0) + strlen(current_path) + 1, sizeof(char));
 		
+		/* Concatenate argv0 + '/' + current_path for file testing */
 		strcat(which, current_path);
 		if (*(path-2) != '/') strcat(which, "/");
 		strcat(which, argv0);
+		
 		if (file_exists(which)) return which;
 		free(which);
 		which = NULL;
