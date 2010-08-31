@@ -1,10 +1,13 @@
 /* 
  * MiniShell - Parte 1
  *
- * Lucas Pierre Figueiredo - 6426847
+ * Alex Palmeira Fragoso              - 5377692
+ * Lucas Pierre Figueiredo            - 6426847
  * Sebastião Giacheto Ferreira Júnior - 5634611
+ *
  *  * Turma B - SO2
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
