@@ -169,7 +169,6 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
     return 0;
 }
 
-
 /* Similar to the unix program 'which'. Get the program name in argv0, search
  for it's ocurrence on the directorys list of $PATH, and returns the first 
  ocurrence, with the program name appended to the directory str 
@@ -202,7 +201,6 @@ char * which(char * argv0) {
 	return NULL;
 }
 
-
 /* Check file existence on path "filename" */
 int file_exists(const char * filename) {
 	FILE * file;
@@ -212,8 +210,6 @@ int file_exists(const char * filename) {
     }
     return 0;
 }
-
-
 
 /***********************
  * Other helper routines
@@ -235,6 +231,3 @@ void app_error(char *msg)
 	fprintf(stdout, "%s\n", msg);
 	exit(1);
 }
-
-
-
