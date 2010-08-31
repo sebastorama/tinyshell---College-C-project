@@ -2,7 +2,7 @@
  * MiniShell - Parte 1
  * 
  * Sebastião Giacheto Ferreira Júnior - 5634611
- *  * Turma A - SO2
+ *  * Turma B - SO2
  */
 #include <stdio.h>
 #include <stdlib.h>
