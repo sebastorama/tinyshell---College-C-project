@@ -83,11 +83,12 @@ void eval(char *cmdline)
 	pid_t pid;
 	
 	bg = parseline(cmdline, argv, &argc);
-	char * argv0_with_path = which(argv[0]);
 
 	if (!argc) return; /* parseline got a blank line */
 	
 	
+	/* get the argv0 (executable name), with absolute path */
+	char * argv0_with_path = which(argv[0]);
 	pid = fork();
 	if (pid > 0)         /* father code */
 	{   
@@ -172,30 +173,37 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
  fresh new allocated str. If nothing found, returns NULL. 
  Also, if argv0 is already an absolute path (with a '/' on the beginning), 
  return argv0 unchanged */
+
 char * which(char * argv0) {
-	if (argv0[0] == '/') return argv0;
-	char *env_path = getenv("PATH");
-	char *path = calloc(strlen(env_path), sizeof(char));
-	strcpy(path, env_path);
-	char *current_path = NULL; /* Holds the current path that's being tested */
-	char *which = NULL;
-	
-	int i;
-	for (i=0; i<MAXPATHS && path; i++) {
-		current_path = strsep(&path, ":");
-		which = calloc(strlen(argv0) + strlen(current_path) + 1, sizeof(char));
+	if (argv0) {
+		if (argv0[0] == '/') return argv0;
+		char *env_path = getenv("PATH");
+		char *path = calloc(strlen(env_path), sizeof(char));
+		strcpy(path, env_path);
+		char *current_path = NULL; /* Holds the current path that's being tested */
+		char *which = NULL;
 		
-		/* Concatenate argv0 + '/' + current_path for file testing */
-		strcat(which, current_path);
-		if (*(path-2) != '/') strcat(which, "/");
-		strcat(which, argv0);
+		int i;
+		for (i=0; i<MAXPATHS && path; i++) {
+			current_path = strsep(&path, ":");
+			which = calloc(strlen(argv0) + strlen(current_path) + 1, sizeof(char));
+			
+			/* Concatenate argv0 + '/' + current_path for file testing */
+			strcat(which, current_path);
+			if (*(path-2) != '/') strcat(which, "/");
+			strcat(which, argv0);
+			
+			if (file_exists(which)) return which;
+			free(which);
+			which = NULL;
+		}
 		
-		if (file_exists(which)) return which;
-		free(which);
-		which = NULL;
+		return NULL;	
+	} else {
+		return NULL;
 	}
+
 	
-	return NULL;
 }
 
 /* Check file existence on path "filename" */
