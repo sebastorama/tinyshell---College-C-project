@@ -1,6 +1,7 @@
 /* 
  * MiniShell - Parte 1
- * 
+ *
+ * Lucas Pierre Figueiredo - 6426847
  * Sebastião Giacheto Ferreira Júnior - 5634611
  *  * Turma B - SO2
  */
