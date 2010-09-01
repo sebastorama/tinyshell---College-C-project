@@ -5,7 +5,7 @@
  * Lucas Pierre Figueiredo            - 6426847
  * Sebastião Giacheto Ferreira Júnior - 5634611
  *
- *  * Turma B - SO2
+ *  * Grupo B14 - SO2
  */
 
 #include <stdio.h>
@@ -113,7 +113,6 @@ void eval(char *cmdline)
  * Characters enclosed in single quotes are treated as a single
  * argument.
  *
- *
  * We modified this a little bit from the original source by adding a 
  * the extern parameter "argc_out". This parameter should inform the
  * caller, the number of arguments parsed on "argv" array.
@@ -129,7 +128,6 @@ int parseline(const char *cmdline, char **argv, int *argc_out)
     buf[strlen(buf)-1] = ' ';  /* replace trailing '\n' with space */ 
     while (*buf && (*buf == ' ')) /* ignore leading spaces */
 		buf++;
-	
 	
 	
     /* Build the argv list */
@@ -202,8 +200,6 @@ char * which(char * argv0) {
 	} else {
 		return NULL;
 	}
-
-	
 }
 
 /* Check file existence on path "filename" */
