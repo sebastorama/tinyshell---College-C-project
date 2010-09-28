@@ -9,6 +9,7 @@
 
 #include "jobs.h"
 
+
 /***********************
  * Jobs operations 
  ***********************/
@@ -58,14 +59,14 @@ int first_free_job(job *jobs) {
 }
 
 
-int add_job(job *jobs, pid_t pid, char *cmdline) {
+int add_job(job *jobs, pid_t pid, int state, char *cmdline) {
 	if (pid > 0) {
 		int index = first_free_job(jobs);
 		if(index < 0) {
 			return -1;
 		} else {
 			jobs[index].pid	= pid;
-			jobs[index].state = BG;
+			jobs[index].state = state;
 			strcpy(jobs[index].cmdline, cmdline);
 			return index;
 		}

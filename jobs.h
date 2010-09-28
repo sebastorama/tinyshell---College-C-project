@@ -41,7 +41,7 @@ void initialize_jobs(job *jobs);
  * If you attempt to insert an invalid "pid", returns -1. If succeed
  * returns the jid.
  */
-int add_job(job *jobs, pid_t pid, char *cmdline);
+int add_job(job *jobs, pid_t pid, int state, char *cmdline);
 
 /* remove_job_by_pid() - remove job from the jobs list
  *
