@@ -27,9 +27,14 @@ char sbuf[MAXLINE];         /* for composing sprintf messages */
 
 /* Function prototypes */
 void eval(char *cmdline);
+int builtin_cmd(char **argv);
 int parseline(const char *cmdline, char **argv, int *argc_out);
 char * which(char * argv0);
 int file_exists(const char * filename);
+
+/* Dir operations */
+void print_dir();
+int change_dir();
 
 /* Misc function prototypes */
 void usage(void);
@@ -105,6 +110,31 @@ void eval(char *cmdline)
 	}
 	
 	return;
+}
+
+
+
+int builtin_cmd(char **argv) {
+	char *args[MAXARGS];
+	
+    *args = *argv;
+    if (strcmp(args[0],"quit") == 0) {
+		printf("Quitting ...\n");
+		exit(0);
+	}
+	else if (strcmp(args[0], "jobs") == 0) {		
+		return 1;
+	}
+	else if (strcmp(args[0], "cd") == 0) {
+		change_dir();
+		return 1;
+	}
+	else if (strcmp(args[0], "pwd") == 0) {
+		print_dir();
+		return 1;
+	}
+	
+	return 0;     /* not a builtin command */
 }
 
 /* 
@@ -210,6 +240,17 @@ int file_exists(const char * filename) {
         return 1;
     }
     return 0;
+}
+
+
+/* Dir operations */
+void print_dir() {
+	
+}
+
+int change_dir() {
+	
+	return 0;
 }
 
 /***********************
