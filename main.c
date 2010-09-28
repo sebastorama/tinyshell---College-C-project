@@ -18,6 +18,23 @@
 #define _ANSI_SOURCE
 #define MAXLINE    1024   /* max line size */
 #define MAXARGS     128   /* max args on a command line */
+#define MAXJOBS      16   /* max jobs at any point in time */
+
+/* Job states */
+#define UNDEF 0 /* undefined */
+#define FG 1    /* running in foreground */
+#define BG 2    /* running in background */
+#define ST 3    /* stopped */
+
+
+typedef struct job_t {              /* The job struct */
+    pid_t pid;              /* job PID */
+    int jid;                /* job ID [1, 2, ...] */
+    int state;              /* UNDEF, BG, FG, or ST */
+    char cmdline[MAXLINE];  /* command line */
+} job;
+job jobs[MAXJOBS]; /* The job list */
+
 
 /* Global variables */
 char prompt[] = "B14> ";    /* command line prompt */
@@ -35,6 +52,11 @@ int file_exists(const char * filename);
 /* Dir operations */
 void print_dir();
 int change_dir();
+
+/* Job operations */
+void list_jobs(job *jobs);
+int add_job(job *jobs, pid_t pid, char *cmdline);
+int remove_job(job *jobs, int jid);
 
 /* Misc function prototypes */
 void usage(void);
