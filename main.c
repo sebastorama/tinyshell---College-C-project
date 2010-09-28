@@ -93,10 +93,11 @@ void eval(char *cmdline)
 	if (pid > 0)         /* father code */
 	{   
 		if(bg) {
-			
+			add_job(jobs, pid, BG, argv0_with_path);
 		}
-		waitpid(pid, 0, 0);
-		memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
+		else {
+			waitpid(pid, 0, 0);
+		}
 	} 
 	else if (pid==0)   /* child code */
 	{
@@ -105,6 +106,7 @@ void eval(char *cmdline)
 		exit(1); /* if something goes wrong */
 	}
 	
+	memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
 	return;
 }
 
@@ -142,7 +144,10 @@ int builtin_cmd(char **argv) {
 
 /* Dir operations */
 void print_dir() {
-	
+	char temp[1024];
+	getcwd(temp,1024);
+	printf("%s\n", temp);
+
 }
 
 int change_dir() {
