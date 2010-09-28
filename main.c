@@ -18,6 +18,7 @@
 /* Global variables */
 char prompt[] = "B14> ";    /* command line prompt */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
+job jobs[MAXJOBS];
 /* End global variables */
 
 
