@@ -29,7 +29,6 @@
 
 typedef struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
-    int jid;                /* job ID [1, 2, ...] */
     int state;              /* UNDEF, BG, FG, or ST */
     char cmdline[MAXLINE];  /* command line */
 } job;
@@ -55,6 +54,8 @@ int change_dir();
 
 /* Job operations */
 void list_jobs(job *jobs);
+void initialize_jobs(job *jobs);
+int first_free_job(job *jobs);
 int add_job(job *jobs, pid_t pid, char *cmdline);
 int remove_job(job *jobs, int jid);
 
@@ -70,6 +71,7 @@ int main(int argc, char **argv)
 {
     char cmdline[MAXLINE];
     int emit_prompt = 1; /* emit prompt (default) */
+	initialize_jobs(jobs);
 	
     /* Redirect stderr to stdout (so that driver will get all output
      * on the pipe connected to stdout) */
@@ -278,6 +280,64 @@ int change_dir() {
 	
 	return 0;
 }
+
+
+
+/***********************
+ * Jobs operations 
+ ***********************/
+void list_jobs(job *jobs) {
+	int i;
+	for (i=0; i< MAXJOBS; i++) {
+		if (jobs[i].pid != 0) {
+			printf("[%d] (%d) ", i, jobs[i].pid);
+			switch (jobs[i].state) {
+				case BG: 
+					printf("Running ");
+					break;
+				case FG: 
+					printf("Foreground ");
+					break;
+				case ST: 
+					printf("Stopped ");
+					break;
+				default:
+					printf("listjobs: Internal error: job[%d].state=%d ", 
+						   i, jobs[i].state);
+			}
+			printf("%s", jobs[i].cmdline);
+		}
+	}
+}
+
+void initialize_jobs(job *jobs) {
+	int i;
+	for (i=0; i<MAXJOBS; i++) {
+		jobs[i].pid = 0;
+		jobs[i].state = UNDEF;
+		memset(jobs[i].cmdline, 0, sizeof(char)*MAXLINE);
+	}
+}
+
+
+int first_free_job(job *jobs) {
+	
+}
+
+
+int add_job(job *jobs, pid_t pid, char *cmdline) {
+	if (pid > 0) {
+		
+	} else {
+		return -1;
+	}
+
+}
+
+int remove_job(job *jobs, int jid) {
+	
+}
+
 
 /***********************
  * Other helper routines
