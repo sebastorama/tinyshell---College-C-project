@@ -1,10 +1,10 @@
-/*
- *  parser.c
- *  tsh
+/* 
  *
- *  Created by Sebastião Ferreira on 9/28/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ * Alex Palmeira Fragoso              - 5377692
+ * Lucas Pierre Figueiredo            - 6426847
+ * Sebastião Giacheto Ferreira Júnior - 5634611
  *
+ *  * Grupo B14 - SO2
  */
 
 #include "parser.h"

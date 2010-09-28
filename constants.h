@@ -1,3 +1,11 @@
+/* 
+ *
+ * Alex Palmeira Fragoso              - 5377692
+ * Lucas Pierre Figueiredo            - 6426847
+ * Sebastião Giacheto Ferreira Júnior - 5634611
+ *
+ *  * Grupo B14 - SO2
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
