@@ -90,8 +90,8 @@ void eval(char *cmdline)
 	pid_t pid;
 	
 	bg = parseline(cmdline, argv, &argc);
-
-	if (!argc) return; /* parseline got a blank line */
+	if(builtin_cmd(argv)) return; /* check for builtin cmd */
+	if (!argc) return;            /* parseline got a blank line */
 	
 	
 	/* get the argv0 (executable name), with absolute path */
@@ -113,7 +113,11 @@ void eval(char *cmdline)
 }
 
 
-
+/*
+ * builtin_cmd - Check if a given command is builtin.
+ * If the answer is positive, execute the command and return 1.
+ * If not, do nothing, and return 0.
+ */
 int builtin_cmd(char **argv) {
 	char *args[MAXARGS];
 	
