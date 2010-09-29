@@ -91,11 +91,17 @@ void eval(char *cmdline)
 	char * argv0_with_path = which(argv[0]);
 	pid = fork();
 	if (pid > 0)         /* father code */
-	{   
+	{
 		if(bg) {
 			add_job(jobs, pid, BG, argv0_with_path);
+			printf("Process Job ID: %d\n"
+				   "PID: %d\n"
+				   "Name: %s\n"
+				   "in background...\n", pid_to_jid(jobs, pid), pid, argv[0]);
+			
 		}
 		else {
+			add_job(jobs, pid, FG, argv0_with_path);
 			waitpid(pid, 0, 0);
 		}
 	} 
@@ -136,7 +142,6 @@ int builtin_cmd(char **argv) {
 		print_dir();
 		return 1;
 	}
-	
 	return 0;     /* not a builtin command */
 }
 
