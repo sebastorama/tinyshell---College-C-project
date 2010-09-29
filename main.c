@@ -19,11 +19,18 @@
 char prompt[] = "B14> ";    /* command line prompt */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
 job jobs[MAXJOBS];
+
+	/* Terminal/session/process group */
+	int shell_terminal;
+	pid_t shell_pgid;
+	struct termios shell_tmodes;
 /* End global variables */
 
 
 /* Function prototypes */
+void initialize_shell();
 void eval(char *cmdline);
+
 
 /* Dir operations */
 void print_dir();
@@ -40,6 +47,7 @@ void app_error(char *msg);
 int main(int argc, char **argv) 
 {
     char cmdline[MAXLINE];
+	initialize_shell();
     int emit_prompt = 1; /* emit prompt (default) */
 	initialize_jobs(jobs);
 	
@@ -49,7 +57,6 @@ int main(int argc, char **argv)
 	
     /* Execute the shell's read/eval loop */
     while (1) {
-		
 		/* Read command line */
 		if (emit_prompt) {
 			printf("%s", prompt);
@@ -71,6 +78,38 @@ int main(int argc, char **argv)
     exit(0); /* control never reaches here */
 }
 
+/*
+ * initialize_shell - Initialize the shell :D 
+ *
+ */
+void initialize_shell() {
+	shell_terminal = STDIN_FILENO;
+	
+	/* Loop until we are in the foreground.  */
+	while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp ()))
+		kill(- shell_pgid, SIGTTIN);
+	
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGCHLD, SIG_IGN);
+	
+	/* Put ourselves in our own process group.  */
+	shell_pgid = getpid ();
+	if (setpgid (shell_pgid, shell_pgid) < 0) {
+		perror("Couldn't put the shell in its own process group");
+		exit (1);
+	}
+	
+	/* Grab control of the terminal.  */
+	tcsetpgrp(shell_terminal, shell_pgid);
+	
+	/* Save default terminal attributes for shell.  */
+	tcgetattr(shell_terminal, &shell_tmodes);
+}
+
 /* 
  * eval - Evaluate the command line that the user has just typed in
  * 
@@ -79,9 +118,15 @@ void eval(char *cmdline)
 {
 	char *argv[MAXARGS];
 	memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
-	
 	int argc, bg;
+	sigset_t mask;
 	pid_t pid;
+	
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTSTP);
+	
 	
 	bg = parseline(cmdline, argv, &argc);
 	if (!argc | builtin_cmd(argv)) return;
@@ -93,6 +138,7 @@ void eval(char *cmdline)
 	if (pid > 0)         /* father code */
 	{
 		if(bg) {
+			sigprocmask(SIG_UNBLOCK, &mask, NULL);
 			add_job(jobs, pid, BG, argv0_with_path);
 			printf("Process Job ID: %d\n"
 				   "PID: %d\n"
@@ -108,7 +154,7 @@ void eval(char *cmdline)
 	else if (pid==0)   /* child code */
 	{
 		setpgid(0, 0);
-		execve(argv0_with_path, argv, 0);
+		execvp(argv0_with_path, argv);
 		exit(1); /* if something goes wrong */
 	}
 	
@@ -123,22 +169,20 @@ void eval(char *cmdline)
  * If not, do nothing, and return 0.
  */
 int builtin_cmd(char **argv) {
-	char *args[MAXARGS];
 	
-    *args = *argv;
-    if (strcmp(args[0],"quit") == 0) {
+    if (strcmp(argv[0],"quit") == 0) {
 		printf("Quitting ...\n");
 		exit(0);
 	}
-	else if (strcmp(args[0], "jobs") == 0) {
+	else if (strcmp(argv[0], "jobs") == 0) {
 		list_jobs(jobs);
 		return 1;
 	}
-	else if (strcmp(args[0], "cd") == 0) {
-		change_dir();
+	else if (strcmp(argv[0], "cd") == 0) {
+		chdir(argv[1]);
 		return 1;
 	}
-	else if (strcmp(args[0], "pwd") == 0) {
+	else if (strcmp(argv[0], "pwd") == 0) {
 		print_dir();
 		return 1;
 	}
@@ -146,18 +190,11 @@ int builtin_cmd(char **argv) {
 }
 
 
-
 /* Dir operations */
 void print_dir() {
 	char temp[1024];
 	getcwd(temp,1024);
 	printf("%s\n", temp);
-
-}
-
-int change_dir() {
-	
-	return 0;
 }
 
 /***********************
