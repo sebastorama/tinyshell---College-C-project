@@ -13,6 +13,7 @@
 #define FG 1    /* running in foreground */
 #define BG 2    /* running in background */
 #define ST 3    /* stopped */
+#define TM 4	/* signaled/terminated */
 
 typedef struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
@@ -21,6 +22,11 @@ typedef struct job_t {              /* The job struct */
     char cmdline[MAXLINE];  /* command line */
 } job;
 
+
+/* update_job_status() - Set the real state for the jobs on the
+ * "jobs" job list using the waitpid call to set the current state.
+ */
+void update_job_status(job *jobs);
 
 /* list_jobs() - print jobs list
  *
