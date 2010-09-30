@@ -140,14 +140,7 @@ void eval(char *cmdline)
 	char *argv[MAXARGS];
 	memset(argv, 0x0, sizeof(char *)*MAXARGS); /* Reset the argv vector */
 	int argc, bg;
-	sigset_t mask;
-	pid_t pid;
-	
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGCHLD);
-	sigaddset(&mask, SIGINT);
-	sigaddset(&mask, SIGTSTP);
-	
+	pid_t pid;	
 	
 	bg = parseline(cmdline, argv, &argc);
 	if (!argc | builtin_cmd(argv)) return;
@@ -160,25 +153,29 @@ void eval(char *cmdline)
 	pid = fork();
 	if (pid > 0)         /* father code */
 	{
+		setpgid (pid, pid);
 		if(bg) {
 			add_job(jobs, pid, BG, argv0_with_path);
 			printf("Process Job ID: %d\n"
 				   "PID: %d\n"
 				   "Name: %s\n"
 				   "in background...\n", pid_to_jid(jobs, pid), pid, argv[0]);
-			
+			kill(- pid, SIGCONT);
 		}
 		else {
 			add_job(jobs, pid, FG, argv0_with_path);
+			tcsetpgrp(shell_terminal, pid);
 			waitpid(pid, 0, 0);
+			tcsetpgrp(shell_terminal, getpid());
 			remove_job_by_pid(jobs, pid);
 		}
 	} 
 	else if (pid==0)   /* child code */
-	{
-		setpgid(0, 0);
-		tcsetpgrp(shell_terminal, pid);
+	{	
+		pid = getpid();
+		setpgid(pid, pid);
 		default_signals();
+		if(!bg) tcsetpgrp(shell_terminal, pid);
 		execvp(argv0_with_path, argv);
 		exit(1); /* if something goes wrong */
 	}
