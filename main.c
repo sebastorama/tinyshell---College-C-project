@@ -155,6 +155,8 @@ void eval(char *cmdline)
 	
 	/* get the argv0 (executable name), with absolute path */
 	char * argv0_with_path = which(argv[0]);
+	if(!argv0_with_path) return;
+	
 	pid = fork();
 	if (pid > 0)         /* father code */
 	{
@@ -175,6 +177,7 @@ void eval(char *cmdline)
 	else if (pid==0)   /* child code */
 	{
 		setpgid(0, 0);
+		tcsetpgrp(shell_terminal, pid);
 		default_signals();
 		execvp(argv0_with_path, argv);
 		exit(1); /* if something goes wrong */
