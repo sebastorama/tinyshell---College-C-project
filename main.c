@@ -28,10 +28,13 @@ job jobs[MAXJOBS];
 
 
 /* Function prototypes */
+void sigchld_handler(int sig);
+
 void default_signals();
 void ignore_signals();
 void initialize_shell();
 void eval(char *cmdline);
+
 
 
 /* Dir operations */
@@ -74,7 +77,6 @@ int main(int argc, char **argv)
 		/* Evaluate the command line */
 		eval(cmdline);
 		fflush(stdout);
-		fflush(stdout);
     } 
 	
     exit(0); /* control never reaches here */
@@ -94,13 +96,13 @@ void default_signals() {
 
 /* ignore_signals() - We are the shell, we don't want the shell process to close
  itself accidentaly if we receive a signal. */
-void ignore_signals() {
+void shell_signals() {
 	signal(SIGINT , SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGTTIN, SIG_IGN);
 	signal(SIGTTOU, SIG_IGN);
-	signal(SIGCHLD, SIG_IGN);
+	signal(SIGCHLD, sigchld_handler);
 }
 
 
@@ -115,7 +117,7 @@ void initialize_shell() {
 	while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp()))
 		kill(- shell_pgid, SIGTTIN);
 	
-	ignore_signals();
+	shell_signals();
 	
 	/* Put ourselves in our own process group.  */
 	shell_pgid = getpid();
@@ -156,14 +158,8 @@ void eval(char *cmdline)
 		setpgid (pid, pid);
 		if(bg) {
 			add_job(jobs, pid, BG, argv0_with_path);
-			printf("Process Job ID: %d\n"
-				   "PID: %d\n"
-				   "Name: %s\n"
-				   "in background...\n", pid_to_jid(jobs, pid), pid, argv[0]);
-			kill(- pid, SIGCONT);
 		}
 		else {
-			add_job(jobs, pid, FG, argv0_with_path);
 			tcsetpgrp(shell_terminal, pid);
 			waitpid(pid, 0, 0);
 			tcsetpgrp(shell_terminal, getpid());
@@ -211,6 +207,16 @@ int builtin_cmd(char **argv) {
 	return 0;     /* not a builtin command */
 }
 
+
+/* 
+ * sigchld_handler - When any of the child process receive
+ * a signal, update all the job status.
+ */
+void sigchld_handler(int sig) 
+{
+	update_job_status(jobs);
+	return;
+}
 
 /* Dir operations */
 void print_dir() {
