@@ -14,8 +14,10 @@
  ***********************/
 void list_jobs(job *jobs) {
 	int i;
+	char job_found = 0;
 	for (i=0; i< MAXJOBS; i++) {
 		if (jobs[i].pid != 0) {
+			job_found = 1;
 			printf("[%d] (%d) ", i, jobs[i].pid);
 			switch (jobs[i].state) {
 				case BG: 
@@ -34,6 +36,7 @@ void list_jobs(job *jobs) {
 			printf("- %s\n", jobs[i].cmdline);
 		}
 	}
+	if(!job_found) printf("There isn't any job in this session\n");
 }
 
 void initialize_job(job *init) {

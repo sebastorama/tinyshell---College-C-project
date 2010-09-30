@@ -38,7 +38,7 @@ void initialize_jobs(job *jobs);
  *
  * The add_job() function add a job with "pid" and "cmdline" to
  * the job list "jobs" on the very first avaliable position (jid).
- * If you attempt to insert an invalid "pid", returns -1. If succeed
+ * If you attempt to insert an invalid "pid", returns -1. On success
  * returns the jid.
  */
 int add_job(job *jobs, pid_t pid, int state, char *cmdline);
