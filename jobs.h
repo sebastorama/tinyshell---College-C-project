@@ -16,6 +16,7 @@
 
 typedef struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
+	int jid;
     int state;              /* UNDEF, BG, FG, or ST */
     char cmdline[MAXLINE];  /* command line */
 } job;
