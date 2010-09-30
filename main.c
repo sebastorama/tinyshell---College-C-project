@@ -204,6 +204,9 @@ int builtin_cmd(char **argv) {
 		print_dir();
 		return 1;
 	}
+	else if (strcmp(argv[0], "exit") == 0) {
+		exit(0);
+	}
 	return 0;     /* not a builtin command */
 }
 
