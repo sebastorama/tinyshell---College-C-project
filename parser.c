@@ -95,14 +95,13 @@ char * which(char * argv0) {
 			
 			/* Concat argv0 + '/' + current_path for file testing */
 			strcat(which, current_path);
-			if (*(path-2) != '/') strcat(which, "/");
+			if (*(current_path-2) != '/') strcat(which, "/");
 			strcat(which, argv0);
-			
+				
 			if (file_exists(which)) return which;
 			free(which);
 			which = NULL;
 		}
-		
 		return NULL;	
 	} else {
 		return NULL;
