@@ -28,6 +28,8 @@ job jobs[MAXJOBS];
 
 
 /* Function prototypes */
+void default_signals();
+void ignore_signals();
 void initialize_shell();
 void eval(char *cmdline);
 
@@ -78,6 +80,30 @@ int main(int argc, char **argv)
     exit(0); /* control never reaches here */
 }
 
+
+/* default_signals() - Set back the signals ignored by ignore_signals to the
+ default behavior. */
+void default_signals() {
+	signal(SIGINT , SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGTSTP, SIG_DFL);
+	signal(SIGTTIN, SIG_DFL);
+	signal(SIGTTOU, SIG_DFL);
+	signal(SIGCHLD, SIG_DFL);	
+}
+
+/* ignore_signals() - We are the shell, we don't want the shell process to close
+ itself accidentaly if we receive a signal. */
+void ignore_signals() {
+	signal(SIGINT , SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGCHLD, SIG_IGN);
+}
+
+
 /*
  * initialize_shell - Initialize the shell :D 
  *
@@ -86,20 +112,15 @@ void initialize_shell() {
 	shell_terminal = STDIN_FILENO;
 	
 	/* Loop until we are in the foreground.  */
-	while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp ()))
+	while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp()))
 		kill(- shell_pgid, SIGTTIN);
 	
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGTSTP, SIG_IGN);
-	signal(SIGTTIN, SIG_IGN);
-	signal(SIGTTOU, SIG_IGN);
-	signal(SIGCHLD, SIG_IGN);
+	ignore_signals();
 	
 	/* Put ourselves in our own process group.  */
-	shell_pgid = getpid ();
+	shell_pgid = getpid();
 	if (setpgid (shell_pgid, shell_pgid) < 0) {
-		perror("Couldn't put the shell in its own process group");
+		unix_error("Couldn't put the shell in its own process group");
 		exit (1);
 	}
 	
@@ -138,7 +159,6 @@ void eval(char *cmdline)
 	if (pid > 0)         /* father code */
 	{
 		if(bg) {
-			sigprocmask(SIG_UNBLOCK, &mask, NULL);
 			add_job(jobs, pid, BG, argv0_with_path);
 			printf("Process Job ID: %d\n"
 				   "PID: %d\n"
@@ -149,11 +169,13 @@ void eval(char *cmdline)
 		else {
 			add_job(jobs, pid, FG, argv0_with_path);
 			waitpid(pid, 0, 0);
+			remove_job_by_pid(jobs, pid);
 		}
 	} 
 	else if (pid==0)   /* child code */
 	{
 		setpgid(0, 0);
+		default_signals();
 		execvp(argv0_with_path, argv);
 		exit(1); /* if something goes wrong */
 	}
