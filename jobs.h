@@ -75,8 +75,28 @@ void remove_job(job *jobs, int jid);
  */
 int pid_to_jid(job *jobs, pid_t pid);
 
-
+/* wait_for_fg() - Occupied wait, checking if the fg job 
+ * has something to report
+ *
+ * When launching a foreground job, this should be called, to stop
+ * the shell execution, till the foreground job report some status
+ */
 void wait_for_fg(job *jobs);
 
+/* put_in_fg() - Put a stopped or bg job in fg
+ *
+ * put_in_fg() put the job with "jid", which is present on the "jobs"
+ * list into foreground mode, on the session identified by "shell_terminal".
+ * "shell_terminal" is a file descriptor which points to a opened tty.
+ * If this job doesn't exist, it'll have no effect.
+ */
+void put_in_fg(job *jobs, int jid, int shell_terminal);
 
-int fg_job(job *jobs);
+
+/* put_in_bg() - Put a stopped job to continue it's work in bg mode
+ *
+ * put_in_bg() put the job with "jid", which is present on the "jobs"
+ * list, to continue it's work in bg mode. If this job doesn't exist, it'll
+ * have no effect.
+ */
+void put_in_bg(job *jobs, int jid);

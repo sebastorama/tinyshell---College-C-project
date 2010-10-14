@@ -207,6 +207,14 @@ int builtin_cmd(char **argv) {
 	else if (strcmp(argv[0], "exit") == 0) {
 		exit(0);
 	}
+	else if (strcmp(argv[0], "fg") == 0) {
+		put_in_fg(jobs, atoi(argv[1]), shell_terminal);
+		return 1;
+	}
+	else if (strcmp(argv[0], "bg") == 0) {
+		put_in_bg(jobs, atoi(argv[1]));
+		return 1;
+	}
 	return 0;     /* not a builtin command */
 }
 

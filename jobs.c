@@ -148,6 +148,14 @@ int pid_to_jid(job *jobs, pid_t pid) {
 	return -1;
 }
 
+int fg_job(job *jobs) {
+	int i;
+	for (i=0; i<MAXJOBS; i++) {
+		if(jobs[i].state == FG) return i;
+	}
+	return -1;
+}
+
 void wait_for_fg(job *jobs) {
 	int status;
 	pid_t pid;
@@ -163,10 +171,22 @@ void wait_for_fg(job *jobs) {
 }
 
 
-int fg_job(job *jobs) {
-	int i;
-	for (i=0; i<MAXJOBS; i++) {
-		if(jobs[i].state == FG) return i;
+void put_in_fg(job *jobs, int jid, int shell_terminal) {
+	if(jobs[jid].pid != 0) {
+		jobs[jid].state = FG;
+		tcsetpgrp(shell_terminal, jobs[jid].pid);
+		kill(-jobs[jid].pid, SIGCONT);
+		wait_for_fg(jobs);
+		tcsetpgrp(shell_terminal, getpid());
 	}
-	return -1;
 }
+
+void put_in_bg(job *jobs, int jid) {
+	if(jobs[jid].pid != 0) {
+		jobs[jid].state = BG;
+		kill(-jobs[jid].pid, SIGCONT);
+		wait_for_fg(jobs);
+	}
+}
+
+
