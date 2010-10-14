@@ -145,7 +145,7 @@ void eval(char *cmdline)
 	pid_t pid;	
 	
 	bg = parseline(cmdline, argv, &argc);
-	if (!argc | builtin_cmd(argv)) return;
+	if (!argc || builtin_cmd(argv)) return;
 	
 	
 	/* get the argv0 (executable name), with absolute path */
