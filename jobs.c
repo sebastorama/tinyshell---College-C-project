@@ -44,19 +44,26 @@ void initialize_job(job *init, int jid) {
 }
 
 
-void set_job_status(job *j, int status) {	
+void set_job_status(job *j, int status) {
+	int fg_job = 0;
+	if (j->state == FG) {
+		fg_job = 1;
+	}
+	
 	if (WIFSTOPPED(status)) {
 		j->state = ST;
 		print_job(*j);
 	} else {
 		j->state = TM;
-		print_job(*j);
+		if (!fg_job)
+			print_job(*j);
 		
+		initialize_job(j, j->jid);
+
 		if(WIFSIGNALED(status)) {
 			fprintf(stderr, "Terminated by signal %d.\n",
 					 (int) j->pid, WTERMSIG(status));
 		}
-		initialize_job(j, j->jid);
 	}
 }
 
@@ -141,18 +148,25 @@ int pid_to_jid(job *jobs, pid_t pid) {
 	return -1;
 }
 
-void wait_for_fg(job *jobs, int jid) {
-	job fg_job = jobs[jid];
+void wait_for_fg(job *jobs) {
 	int status;
 	pid_t pid;
 	
 	do {
-		pid = waitpid(-1, &status, WUNTRACED);
+		pid = waitpid(-1, &status, WUNTRACED|WNOHANG);
 		
 		if(pid>0) {
 			int jid = pid_to_jid(jobs, pid);
 			if(jid != -1) set_job_status(&jobs[jid], status);
 		}
-	} while (fg_job.state == FG);
-	
+	} while (fg_job(jobs) >= 0);
+}
+
+
+int fg_job(job *jobs) {
+	int i;
+	for (i=0; i<MAXJOBS; i++) {
+		if(jobs[i].state == FG) return i;
+	}
+	return -1;
 }
