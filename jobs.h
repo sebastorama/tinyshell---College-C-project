@@ -74,3 +74,6 @@ void remove_job(job *jobs, int jid);
  * If nothing was found, returns -1.
  */
 int pid_to_jid(job *jobs, pid_t pid);
+
+
+void wait_for_fg(job *jobs, int jid);

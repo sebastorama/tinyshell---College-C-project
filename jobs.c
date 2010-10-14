@@ -51,14 +51,15 @@ void set_job_status(job *j, int status) {
 	} else {
 		j->state = TM;
 		print_job(*j);
-		initialize_job(j, j->jid);
 		
 		if(WIFSIGNALED(status)) {
 			fprintf(stderr, "Terminated by signal %d.\n",
 					 (int) j->pid, WTERMSIG(status));
 		}
+		initialize_job(j, j->jid);
 	}
 }
+
 
 void update_job_status(job *jobs) {
 	int status;
@@ -138,4 +139,20 @@ int pid_to_jid(job *jobs, pid_t pid) {
 		if (jobs[i].pid == pid) return i;
 	}
 	return -1;
+}
+
+void wait_for_fg(job *jobs, int jid) {
+	job fg_job = jobs[jid];
+	int status;
+	pid_t pid;
+	
+	do {
+		pid = waitpid(-1, &status, WUNTRACED);
+		
+		if(pid>0) {
+			int jid = pid_to_jid(jobs, pid);
+			if(jid != -1) set_job_status(&jobs[jid], status);
+		}
+	} while (fg_job.state == FG);
+	
 }

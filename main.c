@@ -161,7 +161,9 @@ void eval(char *cmdline)
 		}
 		else {
 			tcsetpgrp(shell_terminal, pid);
-			waitpid(pid, 0, 0);
+			add_job(jobs, pid, FG, argv0_with_path);
+			int jid = pid_to_jid(jobs, pid);
+			wait_for_fg(jobs, jid);
 			tcsetpgrp(shell_terminal, getpid());
 			remove_job_by_pid(jobs, pid);
 		}
